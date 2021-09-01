@@ -87,14 +87,14 @@ for(k in 1:K){
   #Generate exposure X1
   X1<-1 + 1*U + rnorm(N,0,1)
   
-  #Include instruments for X1 excluding group 1
+  #Include instruments for X1
   
   for(i in c(21:30,41:50,61:70,81:90)){
     X1<-X1 + G.dat[,i]
   }
   
   #Generate exposure X2
-  X2<-1 + 1*U + 1*X1 + rnorm(N,0,1)
+  X2<-1 + 1*U + 2*X1 + rnorm(N,0,1)
   
   for(i in c(31:40,51:60,71:80,91:100)){
     X2<-X2 + G.dat[,i]
@@ -263,11 +263,11 @@ for(k in 1:K){
   X2fG5[k] <- anova(obj4, obj3)$F[2]
   
   #Define empty vectors for sargan p-values
-  X1sarG1[k]<-fit1$diagnostics[3,4]
-  X1sarG2[k]<-fit2$diagnostics[3,4]
-  X1sarG3[k]<-fit3$diagnostics[3,4]
-  X1sarG4[k]<-fit4$diagnostics[3,4]
-  X1sarG5[k]<-fit5$diagnostics[3,4]
+  X1sarG1[k]<-fit1$diagnostics[4,4]
+  X1sarG2[k]<-fit2$diagnostics[4,4]
+  X1sarG3[k]<-fit3$diagnostics[4,4]
+  X1sarG4[k]<-fit4$diagnostics[4,4]
+  X1sarG5[k]<-fit5$diagnostics[4,4]
   
 }
 
@@ -327,20 +327,51 @@ names(results)<-c("X1_Beta","X1_se","X1_F-statistic","X1lci","X1uci",
 
 #Plot results
 
-#Figure1<-ggplot(data = results, aes(x = Group, y = X1_Beta)) + geom_point(aes(colour = Group))+ coord_flip()+theme_bw()+
- # theme(panel.border = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),
-  #      axis.line = element_line(colour = "black"))+ggtitle("")+
-#  geom_segment(aes(x = Group, y = lci, xend = Group, yend = uci, colour = Group), data = results)+
- # geom_hline(yintercept = 1,linetype = "dashed")+
-#  scale_x_discrete(name = "Instrument Group",breaks = 1:5)+
- # scale_color_manual(name = "Instrument group",values=c("1"="#56B4E9","2"="#D55E00","3"="#009E73","4"="#E69F00","5"="#CC79A7"))+
- # ylab("Mean effect estimate")
+plotdat<-data.frame(c(results$X1_Beta[1],results$X2_Beta[1],
+                      results$X1_Beta[2],results$X2_Beta[2],
+                      results$X1_Beta[3],results$X2_Beta[3],
+                      results$X1_Beta[4],results$X2_Beta[4],
+                      results$X1_Beta[5],results$X2_Beta[5]),
+                    c(results$X1lci[1],results$X2lci[1],
+                      results$X1lci[2],results$X2lci[2],
+                      results$X1lci[3],results$X2lci[3],
+                      results$X1lci[4],results$X2lci[4],
+                      results$X1lci[5],results$X2lci[5]),
+                    c(results$X1uci[1],results$X2uci[1],
+                      results$X1uci[2],results$X2uci[2],
+                      results$X1uci[3],results$X2uci[3],
+                      results$X1uci[4],results$X2uci[4],
+                      results$X1uci[5],results$X2uci[5]),
+                    c(1,2,4,5,7,8,10,11,13,14),
+                    c("X1","X2","X1","X2","X1","X2","X1","X2","X1","X2"))
 
-#png(filename = "TSLS_sim.png",
- #   width = 1920 , height = 1080, units = "px", res=300,
-  #  bg = "white")
+names(plotdat)<-c("Beta","lci","uci","Group","Exposure")
 
-#Figure1
+plotdat$Exposure<-factor(plotdat$Exposure)
 
-#dev.off()
+  Figure1<-ggplot(data = plotdat, aes(x = Group*(-1), y = Beta)) + geom_point(aes(colour = Exposure))+ coord_flip()+theme_bw()+
+  theme(panel.border = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"))+ggtitle("")+
+  geom_segment(aes(x = Group*(-1), y = lci, xend = Group*(-1), yend = uci, colour = Exposure), data = plotdat)+
+  geom_hline(yintercept = 1,linetype = "dashed")+
+  scale_x_continuous(limits = c(-15,0),name = "Instrument Group",breaks = c(1.5,4.5,7.5,10.5,13.5)*(-1),labels = c("1","2","3","4","5"))+
+  scale_color_manual(name = "Estimated exposure",values=c("X1"="#56B4E9","X2"="#D55E00"))+
+  ylab("Mean effect estimate")
+
+png(filename = "MVMR_sim.png",
+    width = 1920 , height = 1080, units = "px", res=300,
+    bg = "white")
+
+Figure1
+
+dev.off()
+
+png(filename = "TB.png",
+    width = 1920 , height = 1920, units = "px", res=300,
+    bg = "white")
+
+plot(density(B, kernel = "gaussian", adjust = 1))
+
+dev.off()
+
 
