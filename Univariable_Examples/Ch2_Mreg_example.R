@@ -17,7 +17,7 @@ hdl.mod<-lm(outcome ~ mmol, data=data[data$lipid_type=="HDL",])
 mregplot<-ggplot(data, aes(x=mmol, y=outcome,color = lipid_type)) +
   geom_point()+
   geom_smooth(method=lm, se=FALSE, fullrange=F)+
-    xlab("Cholesterol (mmol/D)")+
+    xlab("Cholesterol (mmol/L)")+
     ylab("Outcome")+
     labs(color="Lipid fraction")+theme_bw()
 
